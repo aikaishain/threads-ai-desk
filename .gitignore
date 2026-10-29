@@ -1,0 +1,11 @@
+# OneDriveやOfficeが作る一時ファイル
+~$*
+Thumbs.db
+.DS_Store
+*.tmp
+
+# トークン・認証情報を誤って置いてしまった場合の保険（このフォルダには置かない運用）
+*.token
+*.pem
+.env
+.env.*

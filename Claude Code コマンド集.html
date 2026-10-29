@@ -1,0 +1,917 @@
+<title>Claude Code コマンド集</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+/* Layout: sticky header + tabbed sections + filterable cards */
+:root {
+  --bg: #F6F6F4;
+  --surface: #FFFFFF;
+  --surface2: #EFEFED;
+  --fg: #18181B;
+  --fg2: #52525B;
+  --accent: #3B5BDB;
+  --accent-light: #EEF1FF;
+  --border: #E4E4E7;
+  --mono-bg: #F0F0EE;
+  --tag-base-bg: #E4E4E7; --tag-base-fg: #52525B;
+  --tag-info-bg: #DBEAFE; --tag-info-fg: #1D4ED8;
+  --tag-dev-bg: #DCFCE7;  --tag-dev-fg: #166534;
+  --tag-cfg-bg: #FEF3C7;  --tag-cfg-fg: #92400E;
+  --tag-auth-bg: #FCE7F3; --tag-auth-fg: #9D174D;
+  --tag-proj-bg: #F3E8FF; --tag-proj-fg: #6B21A8;
+  --shadow: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D0D10; --surface: #17171C; --surface2: #1F1F26;
+    --fg: #EDEDF0; --fg2: #A1A1AA; --accent: #6B8AFF; --accent-light: #1A1F3D;
+    --border: #27272A; --mono-bg: #1F1F26;
+    --tag-base-bg: #27272A; --tag-base-fg: #A1A1AA;
+    --tag-info-bg: #1E3A5F; --tag-info-fg: #93C5FD;
+    --tag-dev-bg: #14332B;  --tag-dev-fg: #6EE7B7;
+    --tag-cfg-bg: #3D2D0D;  --tag-cfg-fg: #FCD34D;
+    --tag-auth-bg: #3D1029; --tag-auth-fg: #F9A8D4;
+    --tag-proj-bg: #2D1554; --tag-proj-fg: #C4B5FD;
+    --shadow: 0 1px 3px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D0D10; --surface: #17171C; --surface2: #1F1F26;
+  --fg: #EDEDF0; --fg2: #A1A1AA; --accent: #6B8AFF; --accent-light: #1A1F3D;
+  --border: #27272A; --mono-bg: #1F1F26;
+  --tag-base-bg: #27272A; --tag-base-fg: #A1A1AA;
+  --tag-info-bg: #1E3A5F; --tag-info-fg: #93C5FD;
+  --tag-dev-bg: #14332B;  --tag-dev-fg: #6EE7B7;
+  --tag-cfg-bg: #3D2D0D;  --tag-cfg-fg: #FCD34D;
+  --tag-auth-bg: #3D1029; --tag-auth-fg: #F9A8D4;
+  --tag-proj-bg: #2D1554; --tag-proj-fg: #C4B5FD;
+  --shadow: 0 1px 3px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 0 0;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
+}
+.search-wrap { position: relative; flex: 0 0 210px; }
+.search-input {
+  width: 100%;
+  padding: 7px 12px 7px 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--fg);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-icon {
+  position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg2); font-size: 13px; pointer-events: none;
+}
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 2px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 8px 18px;
+  border: none; background: none;
+  color: var(--fg2);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn:hover { color: var(--fg); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Main */
+.main { max-width: 900px; margin: 0 auto; padding-block: 24px; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.section-desc {
+  color: var(--fg2); font-size: 13px;
+  margin: 0 0 20px; line-height: 1.75;
+}
+
+/* Table cards */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.table-card-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.table-card-title { font-size: 13px; font-weight: 600; color: var(--fg); }
+.count-badge {
+  font-size: 11px; font-weight: 500;
+  background: var(--surface2); color: var(--fg2);
+  border-radius: 10px; padding: 1px 7px;
+  font-variant-numeric: tabular-nums;
+}
+.cmd-table { width: 100%; border-collapse: collapse; }
+.cmd-table th {
+  text-align: left;
+  padding: 9px 20px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--fg2);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.cmd-table td {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.cmd-table tr:last-child td { border-bottom: none; }
+.cmd-table tr.hidden-row { display: none; }
+
+.cmd-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  display: inline-block;
+}
+.cmd-desc { color: var(--fg); font-size: 13px; min-width: 0; }
+.cmd-example {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--fg2);
+  background: var(--mono-bg);
+  padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap; display: inline-block; margin-top: 3px;
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 500;
+  padding: 2px 9px; border-radius: 100px;
+  white-space: nowrap;
+}
+.tag-基本    { background: var(--tag-base-bg); color: var(--tag-base-fg); }
+.tag-情報    { background: var(--tag-info-bg); color: var(--tag-info-fg); }
+.tag-開発    { background: var(--tag-dev-bg);  color: var(--tag-dev-fg); }
+.tag-設定    { background: var(--tag-cfg-bg);  color: var(--tag-cfg-fg); }
+.tag-認証    { background: var(--tag-auth-bg); color: var(--tag-auth-fg); }
+.tag-プロジェクト { background: var(--tag-proj-bg); color: var(--tag-proj-fg); }
+
+/* Keyboard shortcuts */
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 10px;
+}
+.shortcut-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 14px;
+  box-shadow: var(--shadow);
+}
+.shortcut-keys {
+  display: flex; align-items: center; gap: 4px;
+  flex-shrink: 0; padding-top: 1px;
+}
+kbd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 7px; color: var(--fg);
+  display: inline-block;
+  box-shadow: 0 1px 0 var(--border);
+}
+.plus { color: var(--fg2); font-size: 11px; }
+.shortcut-action { font-size: 13px; font-weight: 600; color: var(--fg); }
+.shortcut-note { font-size: 12px; color: var(--fg2); margin-top: 2px; }
+
+/* Skills grid */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.skill-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent); margin-bottom: 5px;
+}
+.skill-desc { font-size: 12px; color: var(--fg2); line-height: 1.55; }
+
+/* Model table */
+.model-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.model-row-header {
+  display: grid;
+  grid-template-columns: 170px 1fr auto;
+  gap: 16px; padding: 10px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.model-row-header span {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--fg2);
+}
+.model-row {
+  display: grid;
+  grid-template-columns: 170px 1fr auto;
+  gap: 16px; padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.model-row:last-child { border-bottom: none; }
+.model-name { font-size: 14px; font-weight: 600; color: var(--fg); }
+.model-sub { font-size: 11px; color: var(--fg2); margin-top: 2px; }
+.model-desc { font-size: 13px; color: var(--fg2); min-width: 0; }
+.model-id-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--mono-bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px; color: var(--fg);
+  white-space: nowrap; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  font-variant-numeric: tabular-nums;
+}
+.model-id-pill:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tip box */
+.tip-box {
+  background: var(--accent-light);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px; color: var(--fg);
+  margin-bottom: 20px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.tip-icon { flex-shrink: 0; }
+
+/* No results */
+.no-results {
+  text-align: center; padding: 40px;
+  color: var(--fg2); font-size: 14px;
+  display: none;
+}
+
+/* Footer */
+.footer {
+  max-width: 900px; margin: 0 auto;
+  padding: 20px 0 32px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.footer-note { font-size: 12px; color: var(--fg2); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--fg); color: var(--bg);
+  padding: 8px 18px; border-radius: 8px;
+  font-size: 13px; opacity: 0;
+  transition: opacity .2s; pointer-events: none; z-index: 999;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .model-row, .model-row-header {
+    grid-template-columns: 1fr; gap: 6px;
+  }
+  .search-wrap { flex: 0 0 150px; }
+  .shortcut-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="header-title">
+        <div class="logo-mark">CC</div>
+        Claude Code コマンド集
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="コマンドを検索…">
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="slash">スラッシュコマンド</button>
+      <button class="tab-btn" data-tab="keyboard">キーボード</button>
+      <button class="tab-btn" data-tab="skills">スキル</button>
+      <button class="tab-btn" data-tab="models">モデルID</button>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- スラッシュコマンド -->
+  <section class="section active" id="tab-slash">
+    <p class="section-desc">
+      Claude Code で使えるスラッシュコマンドの一覧です。入力欄で <strong>/</strong> を押すと補完が表示されます。
+    </p>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">基本操作</span>
+        <span class="count-badge">4</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/help</span></td>
+            <td class="cmd-desc">ヘルプを表示する</td>
+            <td><span class="tag tag-基本">基本</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/clear</span></td>
+            <td class="cmd-desc">会話履歴を完全にクリアする</td>
+            <td><span class="tag tag-基本">基本</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/compact</span></td>
+            <td class="cmd-desc">会話を要約して保持しながら履歴をクリア（コンテキスト節約に有効）</td>
+            <td><span class="tag tag-基本">基本</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/exit</span></td>
+            <td class="cmd-desc">Claude Code を終了する（<code>/quit</code> も同様）</td>
+            <td><span class="tag tag-基本">基本</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">情報・ステータス</span>
+        <span class="count-badge">4</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/cost</span></td>
+            <td class="cmd-desc">現在のセッションのトークン使用量とコストを表示</td>
+            <td><span class="tag tag-情報">情報</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/status</span></td>
+            <td class="cmd-desc">アカウント情報・使用中モデル・設定を表示</td>
+            <td><span class="tag tag-情報">情報</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/doctor</span></td>
+            <td class="cmd-desc">Claude Code の健全性チェック（インストール状況・接続確認）</td>
+            <td><span class="tag tag-情報">情報</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/release-notes</span></td>
+            <td class="cmd-desc">最新のリリースノートを表示</td>
+            <td><span class="tag tag-情報">情報</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">開発・コードレビュー</span>
+        <span class="count-badge">4</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/code-review</span></td>
+            <td class="cmd-desc">
+              コードレビューを実行。努力レベルを指定可能<br>
+              <span class="cmd-example">/code-review low | medium | high | xhigh | max</span>
+            </td>
+            <td><span class="tag tag-開発">開発</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/code-review ultra</span></td>
+            <td class="cmd-desc">
+              クラウド上でマルチエージェントによる深いレビュー。PR 番号指定も可能<br>
+              <span class="cmd-example">/code-review ultra 123</span>
+            </td>
+            <td><span class="tag tag-開発">開発</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/simplify</span></td>
+            <td class="cmd-desc">変更コードの簡素化・効率化・重複排除を提案し適用する</td>
+            <td><span class="tag tag-開発">開発</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/pr_comments</span></td>
+            <td class="cmd-desc">現在の PR のコメントを取得・表示する</td>
+            <td><span class="tag tag-開発">開発</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">設定・モデル</span>
+        <span class="count-badge">5</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/config</span></td>
+            <td class="cmd-desc">設定画面を開く（テーマ・モデル・権限など）</td>
+            <td><span class="tag tag-設定">設定</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/model</span></td>
+            <td class="cmd-desc">使用するモデルを設定・変更する</td>
+            <td><span class="tag tag-設定">設定</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/permissions</span></td>
+            <td class="cmd-desc">ツールの実行権限を管理する（自動許可・拒否の設定）</td>
+            <td><span class="tag tag-設定">設定</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/fast</span></td>
+            <td class="cmd-desc">高速モードの ON/OFF 切り替え（Opus ベースで高速出力）</td>
+            <td><span class="tag tag-設定">設定</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/vim</span></td>
+            <td class="cmd-desc">Vim キーバインドモードの ON/OFF 切り替え</td>
+            <td><span class="tag tag-設定">設定</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">プロジェクト・メモリ</span>
+        <span class="count-badge">4</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/init</span></td>
+            <td class="cmd-desc">プロジェクトの CLAUDE.md ファイルを作成・初期化する</td>
+            <td><span class="tag tag-プロジェクト">プロジェクト</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/memory</span></td>
+            <td class="cmd-desc">メモリファイル（MEMORY.md）を編集・確認する</td>
+            <td><span class="tag tag-プロジェクト">プロジェクト</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/todo</span></td>
+            <td class="cmd-desc">Todo リストを表示・管理する</td>
+            <td><span class="tag tag-プロジェクト">プロジェクト</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/bug</span></td>
+            <td class="cmd-desc">Claude Code のバグを GitHub Issues に報告する</td>
+            <td><span class="tag tag-プロジェクト">プロジェクト</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">認証・セットアップ</span>
+        <span class="count-badge">4</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:170px">コマンド</th><th>説明</th><th style="width:90px">カテゴリ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">/login</span></td>
+            <td class="cmd-desc">Anthropic アカウントにログイン・アカウントを切り替える</td>
+            <td><span class="tag tag-認証">認証</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/logout</span></td>
+            <td class="cmd-desc">現在のアカウントからサインアウトする</td>
+            <td><span class="tag tag-認証">認証</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/reset</span></td>
+            <td class="cmd-desc">API キーをリセットする</td>
+            <td><span class="tag tag-認証">認証</span></td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">/terminal-setup</span></td>
+            <td class="cmd-desc">ターミナル統合（シェル補完など）をインストールする</td>
+            <td><span class="tag tag-認証">認証</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="no-results" id="noResults">一致するコマンドが見つかりません</div>
+  </section>
+
+  <!-- キーボードショートカット -->
+  <section class="section" id="tab-keyboard">
+    <p class="section-desc">
+      CLI・ターミナル上でのキーボードショートカット一覧です。OS・シェルの種類により一部異なる場合があります。
+    </p>
+    <div class="shortcut-grid">
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd></div>
+        <div>
+          <div class="shortcut-action">操作をキャンセル</div>
+          <div class="shortcut-note">実行中のツールや生成を中断する</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>C</kbd><kbd>×2</kbd></div>
+        <div>
+          <div class="shortcut-action">強制終了</div>
+          <div class="shortcut-note">Claude Code をすぐに終了する</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>↑</kbd><span class="plus">/</span><kbd>↓</kbd></div>
+        <div>
+          <div class="shortcut-action">入力履歴を移動</div>
+          <div class="shortcut-note">過去に入力したメッセージを呼び出す</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>R</kbd></div>
+        <div>
+          <div class="shortcut-action">履歴を逆順検索</div>
+          <div class="shortcut-note">過去の入力をインクリメンタルサーチ</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>L</kbd></div>
+        <div>
+          <div class="shortcut-action">画面をクリア</div>
+          <div class="shortcut-note">ターミナル表示をクリア（会話履歴は保持）</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></div>
+        <div>
+          <div class="shortcut-action">自動承認を解除</div>
+          <div class="shortcut-note">ツール実行の自動許可モードを一時停止する</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>]</kbd></div>
+        <div>
+          <div class="shortcut-action">最新アーティファクトを再表示</div>
+          <div class="shortcut-note">このセッションで最後に開いたアーティファクトをオープン</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Enter</kbd></div>
+        <div>
+          <div class="shortcut-action">メッセージ送信</div>
+          <div class="shortcut-note">入力を確定して Claude に送信する</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Enter</kbd></div>
+        <div>
+          <div class="shortcut-action">改行（送信しない）</div>
+          <div class="shortcut-note">複数行のメッセージを入力する</div>
+        </div>
+      </div>
+      <div class="shortcut-card">
+        <div class="shortcut-keys"><kbd>/</kbd></div>
+        <div>
+          <div class="shortcut-action">スラッシュコマンド</div>
+          <div class="shortcut-note">行頭で入力するとコマンド補完が表示される</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- スキル -->
+  <section class="section" id="tab-skills">
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <span>スキルは <strong>/skill-name</strong> の形式で呼び出します。タスクの内容に応じて Claude が自動的にロードすることもあります。</span>
+    </div>
+    <p class="section-desc">専門タスク用のスキル一覧です。各スキルは専用の指示セットをロードして動作します。</p>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-name">/code-review</div>
+        <div class="skill-desc">現在の差分や PR をレビュー。<br>努力レベル (low / medium / high / xhigh / max / ultra) を指定できる</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/simplify</div>
+        <div class="skill-desc">変更コードの簡素化・効率化・重複排除を提案し適用する。品質特化（バグ検出は /code-review）</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/init</div>
+        <div class="skill-desc">コードベースのドキュメント付き CLAUDE.md を新規作成する</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/run</div>
+        <div class="skill-desc">プロジェクトのアプリを起動して変更内容を実際にテストする</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/security-review</div>
+        <div class="skill-desc">セキュリティの観点（OWASP など）からコードをレビューする</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/claude-api</div>
+        <div class="skill-desc">Claude API / Anthropic SDK のリファレンス（モデルID・価格・パラメータ・ストリーミングなど）</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/update-config</div>
+        <div class="skill-desc">settings.json の設定変更・フック追加・権限設定をガイド</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/keybindings-help</div>
+        <div class="skill-desc">キーボードショートカットのカスタマイズ・keybindings.json の編集</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/plugin-authoring</div>
+        <div class="skill-desc">Claude Code のプラグイン・パネル・バンド・スラッシュコマンドを作成する</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/dataviz</div>
+        <div class="skill-desc">チャート・グラフ・ダッシュボードなど、あらゆるデータ可視化を作成する前に自動ロード</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/artifact-design</div>
+        <div class="skill-desc">アーティファクト（HTML ページ）作成前のデザインガイダンスをロード</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/artifact-capabilities</div>
+        <div class="skill-desc">アーティファクトに DB・ライブデータ・共有状態などの動的機能を追加する</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/schedule</div>
+        <div class="skill-desc">定期実行するクラウドエージェントのスケジュール設定・管理</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/loop</div>
+        <div class="skill-desc">指定間隔でプロンプトやスラッシュコマンドを繰り返し実行する</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/fewer-permission-prompts</div>
+        <div class="skill-desc">トランスクリプトを分析して権限プロンプトを減らす allowlist を設定</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">/anthropic-skills:deep-research</div>
+        <div class="skill-desc">Web 検索を組み合わせた深いリサーチを実行する</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- モデルID -->
+  <section class="section" id="tab-models">
+    <p class="section-desc">
+      Claude 5 ファミリーのモデル ID 一覧です。ID をクリックするとクリップボードにコピーできます。<code>/model</code> コマンドや API・SDK で使用できます。
+    </p>
+
+    <div class="model-card">
+      <div class="model-row-header">
+        <span>モデル名</span>
+        <span>用途・特徴</span>
+        <span>モデル ID</span>
+      </div>
+      <div class="model-row">
+        <div>
+          <div class="model-name">Claude Sonnet 5.5</div>
+          <div class="model-sub">Claude Code 現在のモデル</div>
+        </div>
+        <div class="model-desc">速度と性能のバランスが優れており、日常的なコーディングタスクに最適。Claude Code のデフォルト推奨モデル</div>
+        <div class="model-id-pill" onclick="copyId(this, 'claude-sonnet-5-5')" title="クリックでコピー">claude-sonnet-5-5</div>
+      </div>
+      <div class="model-row">
+        <div>
+          <div class="model-name">Claude Opus 5.5</div>
+        </div>
+        <div class="model-desc">最高の推論・分析能力を持つ最上位モデル。複雑なアーキテクチャ設計や深い分析に。コストは高め</div>
+        <div class="model-id-pill" onclick="copyId(this, 'claude-opus-5-5')" title="クリックでコピー">claude-opus-5-5</div>
+      </div>
+      <div class="model-row">
+        <div>
+          <div class="model-name">Claude Haiku 5.5</div>
+        </div>
+        <div class="model-desc">最速・最軽量モデル。シンプルなタスクや大量バッチ処理、コスト重視の用途に最適</div>
+        <div class="model-id-pill" onclick="copyId(this, 'claude-haiku-5-5')" title="クリックでコピー">claude-haiku-5-5</div>
+      </div>
+      <div class="model-row">
+        <div>
+          <div class="model-name">Claude Fable 5.1</div>
+        </div>
+        <div class="model-desc">ストーリーテリング・クリエイティブライティング特化モデル。創作・文章生成に</div>
+        <div class="model-id-pill" onclick="copyId(this, 'claude-fable-5-1')" title="クリックでコピー">claude-fable-5-1</div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <span class="tip-icon">⚡</span>
+      <span><strong>高速モード（/fast）</strong>について: Opus ベースで高速出力に最適化されたモードです。モデルを変えるのではなく、<code>/fast</code> コマンドで Claude Code 内のモードとして ON/OFF を切り替えます。</span>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">AWS Bedrock・地域プレフィックス付きモデル ID</span>
+      </div>
+      <table class="cmd-table">
+        <thead><tr><th style="width:200px">形式</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="cmd-name">us.anthropic.*</span></td>
+            <td class="cmd-desc">米国リージョン向け（例: <code>us.anthropic.claude-sonnet-5-5-20251015-v1:0</code>）</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">eu.anthropic.*</span></td>
+            <td class="cmd-desc">欧州リージョン向け</td>
+          </tr>
+          <tr>
+            <td><span class="cmd-name">ap.anthropic.*</span></td>
+            <td class="cmd-desc">アジア太平洋リージョン向け</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span class="footer-note">Claude Code コマンド集 · 2026年10月作成</span>
+  <span class="footer-note">知識カットオフ: 2025年8月 · 最新情報は <code>/help</code> または公式ドキュメントを参照</span>
+</footer>
+
+<div id="toast">コピーしました</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('hidden-row'));
+    document.querySelectorAll('.skill-card').forEach(c => c.style.display = '');
+    document.getElementById('noResults').style.display = 'none';
+  });
+});
+
+// Search
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const active = document.querySelector('.section.active');
+  if (!active) return;
+
+  if (active.id === 'tab-skills') {
+    let any = false;
+    active.querySelectorAll('.skill-card').forEach(card => {
+      const show = !q || card.textContent.toLowerCase().includes(q);
+      card.style.display = show ? '' : 'none';
+      if (show) any = true;
+    });
+    return;
+  }
+
+  if (active.id === 'tab-slash') {
+    let any = false;
+    active.querySelectorAll('tbody tr').forEach(row => {
+      const show = !q || row.textContent.toLowerCase().includes(q);
+      row.classList.toggle('hidden-row', !show);
+      if (show) any = true;
+    });
+    document.getElementById('noResults').style.display = (!any && q) ? 'block' : 'none';
+  }
+});
+
+// Copy model ID
+function copyId(el, id) {
+  const orig = el.textContent;
+  navigator.clipboard.writeText(id).then(() => {
+    showToast('コピーしました: ' + id);
+    el.textContent = '✓ コピー済み';
+    setTimeout(() => { el.textContent = orig; }, 1500);
+  }).catch(() => {
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    showToast('テキストを選択しました');
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2200);
+}
+</script>
